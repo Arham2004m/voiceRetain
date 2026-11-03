@@ -1,0 +1,14 @@
+{
+  "name": "@voiceretain/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"server dev not implemented until Stage 1\"",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@voiceretain/shared": "*"
+  }
+}
