@@ -1,0 +1,8 @@
+node_modules
+.env
+.superpowers
+dist
+.next
+coverage
+*.tsbuildinfo
+src/generated
