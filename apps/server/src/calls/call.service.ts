@@ -1,6 +1,7 @@
+import { MAX_UTTERANCE_CHARS } from "@voiceretain/shared";
 import type { AgentReplyPayload, IncomingCallPayload } from "@voiceretain/shared";
 import type { Redis } from "ioredis";
-import type { Agent, Analyzer } from "../agent/agent.types";
+import type { Agent, Analyzer, CallAnalysis } from "../agent/agent.types";
 import type { Env } from "../config/env";
 import type { Db } from "../db/prisma";
 import type { CallLog, Prisma } from "../generated/prisma/client";
@@ -10,6 +11,7 @@ import type { Emitter } from "../realtime/emitter";
 import { bumpCacheVersion } from "../services/cache";
 import type { CallTimerStore } from "./call.timers";
 import { buildGreeting } from "./greeting";
+import { decideOutcome } from "./outcome";
 
 export type CallErrorCode = "NOT_FOUND" | "FORBIDDEN" | "BAD_STATE";
 
@@ -108,6 +110,32 @@ export function createCallService(deps: CallServiceDeps): CallService {
     };
   }
 
+  const chains = new Map<string, Promise<unknown>>();
+  const failures = new Map<string, number>();
+
+  /** Serializes work per call so overlapping utterances are handled in order. */
+  function enqueue<T>(callId: string, task: () => Promise<T>): Promise<T> {
+    const previous = chains.get(callId) ?? Promise.resolve();
+    const next = previous.then(task);
+    const tail = next.catch(() => undefined);
+    chains.set(callId, tail);
+    void tail.then(() => {
+      if (chains.get(callId) === tail) chains.delete(callId);
+    });
+    return next;
+  }
+
+  async function isInProgress(callId: string): Promise<boolean> {
+    const row = await db.callLog.findUnique({ where: { id: callId }, select: { status: true } });
+    return row?.status === "IN_PROGRESS";
+  }
+
+  const findInProgressByPhone = (phone: string) =>
+    db.callLog.findFirst({
+      where: { status: "IN_PROGRESS", customer: { phone } },
+      select: { id: true },
+    });
+
   const service: CallService = {
     startCallInTx,
 
@@ -199,15 +227,125 @@ export function createCallService(deps: CallServiceDeps): CallService {
         throw new CallError("BAD_STATE", `Call is not ${status.toLowerCase()}`);
     },
 
-    // Task 4.3 — implemented after their tests.
-    async handleUtterance() {
-      throw new Error("not implemented");
+    async handleUtterance(callId, phone, rawText) {
+      await service.assertCallAccess(callId, phone, "IN_PROGRESS");
+      const text = rawText.trim().slice(0, MAX_UTTERANCE_CHARS);
+      if (!text) return;
+      return enqueue(callId, async () => {
+        if (!(await isInProgress(callId))) return;
+        const customerTurn = await db.transcriptTurn.create({
+          data: { callId, speaker: "CUSTOMER", text },
+        });
+        emitter.toDashboard("dashboard:turn", { callId, turn: toTurnDTO(customerTurn) });
+
+        const failuresSoFar = failures.get(callId) ?? 0;
+        const startedAt = Date.now();
+        const result = await deps.agent.runTurn({
+          callId,
+          customerText: text,
+          consecutiveFailures: failuresSoFar,
+        });
+        const latencyMs = Date.now() - startedAt;
+        failures.set(callId, result.failed ? failuresSoFar + 1 : 0);
+
+        // The customer may have hung up while the agent was thinking.
+        if (!(await isInProgress(callId))) return;
+        const agentTurn = await db.transcriptTurn.create({
+          data: { callId, speaker: "AGENT", text: result.replyText, latencyMs },
+        });
+        emitter.toDashboard("dashboard:turn", { callId, turn: toTurnDTO(agentTurn) });
+        emitter.toPhone(phone, "call:agent-reply", {
+          callId,
+          text: result.replyText,
+          ...(result.voucher ? { voucher: result.voucher } : {}),
+          endsCall: result.endsCall,
+        });
+        if (result.endsCall) {
+          await service.endCall(
+            callId,
+            result.endReason === "LLM_FAILURE" ? "LLM_FAILURE" : "AGENT_ENDED",
+          );
+        }
+      });
     },
-    async endCall() {
-      throw new Error("not implemented");
+
+    async endCall(callId, reason) {
+      const endedAt = new Date();
+      const claimed = await db.callLog.updateMany({
+        where: { id: callId, status: "IN_PROGRESS" },
+        data: { status: "ENDED", endedAt, endReason: reason },
+      });
+      if (claimed.count === 0) return; // already ended: idempotent
+      timers.clearAll(callId);
+      failures.delete(callId);
+
+      const call = await db.callLog.findUniqueOrThrow({
+        where: { id: callId },
+        include: {
+          customer: true,
+          cart: { include: { order: true } },
+          turns: { orderBy: { createdAt: "asc" } },
+        },
+      });
+      const durationSec = call.answeredAt
+        ? Math.max(0, Math.round((endedAt.getTime() - call.answeredAt.getTime()) / 1000))
+        : 0;
+      const latencies = call.turns
+        .filter((t) => t.speaker === "AGENT" && t.latencyMs !== null)
+        .map((t) => t.latencyMs as number);
+      const avgLatencyMs = latencies.length
+        ? Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length)
+        : null;
+
+      let analysis: CallAnalysis;
+      try {
+        analysis = await deps.analyzer.analyze(call.turns.map(toTurnDTO));
+      } catch (err) {
+        logger.error({ err, callId }, "post-call analysis failed");
+        analysis = {
+          sentiment: "NEUTRAL",
+          objection: "OTHER",
+          intent: "UNDECIDED",
+          summary: "Analysis unavailable.",
+        };
+      }
+
+      const voucherIssued = (await db.voucher.count({ where: { callId } })) > 0;
+      const outcome = decideOutcome({
+        status: "ENDED",
+        answered: call.answeredAt !== null,
+        declinedWhileRinging: false,
+        voucherIssued,
+        intent: analysis.intent,
+        orderPlaced: call.cart.order !== null,
+      });
+      await db.callLog.update({
+        where: { id: callId },
+        data: {
+          durationSec,
+          avgLatencyMs,
+          sentiment: analysis.sentiment,
+          objection: analysis.objection,
+          summary: analysis.summary,
+          outcome,
+        },
+      });
+      emitter.toPhone(call.customer.phone, "call:ended", { callId, outcome });
+      await afterWrite(callId);
     },
-    async handleDisconnect() {},
-    async handleReconnect() {},
+
+    async handleDisconnect(phone) {
+      const call = await findInProgressByPhone(phone);
+      if (!call) return;
+      timers.set("disconnect", call.id, env.DISCONNECT_GRACE_MS, () =>
+        service.endCall(call.id, "DISCONNECTED"),
+      );
+    },
+
+    async handleReconnect(phone) {
+      const call = await findInProgressByPhone(phone);
+      if (call) timers.clear("disconnect", call.id);
+    },
 
     async recoverStaleCalls() {
       const now = Date.now();
