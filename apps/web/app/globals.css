@@ -1,0 +1,91 @@
+@import "tailwindcss";
+@import "@fontsource-variable/archivo/wdth.css";
+@import "@fontsource-variable/instrument-sans/index.css";
+
+/*
+ * ShopNest: a bright market wall. Flat colour blocks, a condensed signage face for names and
+ * prices, and one memorable object: the price tag hanging on a red thread.
+ */
+@theme {
+  --color-chalk: #f4f6f6;
+  --color-paper: #ffffff;
+  --color-ink: #0f2f36;
+  --color-ink-soft: #46606a;
+  --color-peacock: #0f6b73;
+  --color-marigold: #f5a800;
+  --color-kumkum: #c41e3a;
+  --color-lotus: #f4b8c5;
+  --color-sky: #bfd8e2;
+  --color-leaf: #2f7d4f;
+
+  --font-display: "Archivo Variable", "Arial Narrow", Arial, sans-serif;
+  --font-body: "Instrument Sans Variable", system-ui, sans-serif;
+
+  --animate-swing: swing 1.2s ease-in-out 1 both;
+  @keyframes swing {
+    0% {
+      rotate: 5deg;
+    }
+    22% {
+      rotate: -9deg;
+    }
+    48% {
+      rotate: 6deg;
+    }
+    72% {
+      rotate: -3deg;
+    }
+    100% {
+      rotate: 5deg;
+    }
+  }
+}
+
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-variation-settings: "wdth" 68;
+  letter-spacing: -0.005em;
+  line-height: 0.95;
+}
+
+/* Torn paper edge for the bill. */
+@utility receipt-edge {
+  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 18px 100%;
+}
+
+@utility num {
+  font-variant-numeric: tabular-nums;
+}
+
+@layer base {
+  html {
+    font-size: 17px;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--color-chalk);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    line-height: 1.5;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-peacock);
+    outline-offset: 3px;
+  }
+  ::selection {
+    background: var(--color-marigold);
+    color: var(--color-ink);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
