@@ -14,7 +14,9 @@ const { startAbandonmentWorker } = await import("./queue/abandonment.worker");
 const { createSocketServer, attachSocketHandlers } = await import("./realtime/socket");
 const { createCallService } = await import("./calls/call.service");
 const { CallTimers } = await import("./calls/call.timers");
-const { stubAgent, stubAnalyzer } = await import("./agent/stub-agent");
+const { createLlm } = await import("./agent/create-llm");
+const { createAgentService } = await import("./agent/agent.service");
+const { createAnalyzer } = await import("./agent/analyzer.service");
 
 async function main() {
   const env = getEnv();
@@ -26,15 +28,19 @@ async function main() {
   const { io, emitter } = createSocketServer(httpServer, { env });
   // Replaced by the debounced broadcaster in Stage 9.
   const metrics = { schedule: () => undefined };
+  const llm = createLlm(env);
+  logger.info(
+    { llm: env.MOCK_LLM ? "mock" : env.GEMINI_MODEL },
+    `agent running on the ${env.MOCK_LLM ? "mock" : "Gemini"} LLM client`,
+  );
   const callService = createCallService({
     db: prisma,
     redis,
     emitter,
     timers: new CallTimers(),
     env,
-    // Replaced by the real agent and analyzer in Stage 6, and the metrics broadcaster in Stage 9.
-    agent: stubAgent,
-    analyzer: stubAnalyzer,
+    agent: createAgentService({ db: prisma, redis, env, llm, metrics }),
+    analyzer: createAnalyzer({ llm, env }),
     metrics,
   });
   attachSocketHandlers(io, { callService });

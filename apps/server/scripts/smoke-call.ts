@@ -60,6 +60,8 @@ async function main() {
   const answered = await ask("call:answer", { callId });
   log("answered; greeting:", answered.greeting?.text);
 
+  const ended = next<{ outcome: string }>("call:ended");
+  let agentEnded = false;
   for (const text of utterances) {
     const reply = next<{
       text: string;
@@ -70,12 +72,13 @@ async function main() {
     const r = await reply;
     log(`> ${text}`);
     log(`< ${r.text}`, r.voucher ?? "");
-    if (r.endsCall) break;
+    if (r.endsCall) {
+      agentEnded = true;
+      break;
+    }
   }
-
-  const ended = next<{ outcome: string }>("call:ended");
-  await ask("call:hangup", { callId });
-  log("ended:", await ended);
+  if (!agentEnded) await ask("call:hangup", { callId });
+  log(agentEnded ? "ended by the agent:" : "ended by hang-up:", await ended);
 
   const prisma = createPrisma(process.env.DATABASE_URL!);
   const row = await prisma.callLog.findUniqueOrThrow({ where: { id: callId } });
