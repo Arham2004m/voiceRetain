@@ -21,6 +21,8 @@ export function pickVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice 
   );
 }
 
+const MAX_WATCHDOG_MS = 20_000;
+
 export function useSpeechSynthesis() {
   const [supported, setSupported] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -74,16 +76,28 @@ export function useSpeechSynthesis() {
       setSpeaking(true);
 
       let index = 0;
+      let watchdog: ReturnType<typeof setTimeout> | undefined;
       const next = () => {
+        clearTimeout(watchdog);
         if (token !== tokenRef.current || index >= parts.length) return finish();
-        const utterance = new SpeechSynthesisUtterance(parts[index++]);
+        const sentence = parts[index++]!;
+        const utterance = new SpeechSynthesisUtterance(sentence);
         utterance.lang = "en-IN";
         utterance.rate = 1;
         const voice = pickVoice(voicesRef.current);
         if (voice) utterance.voice = voice;
         // An error must not stall the call: carry on with the next sentence.
-        utterance.onend = next;
-        utterance.onerror = next;
+        let advanced = false;
+        const advance = () => {
+          if (advanced) return;
+          advanced = true;
+          next();
+        };
+        utterance.onend = advance;
+        utterance.onerror = advance;
+        // Some browsers never report the end of an utterance. Move on after a time based on how
+        // long the sentence should take, so the customer is never left waiting on a silent agent.
+        watchdog = setTimeout(advance, Math.min(MAX_WATCHDOG_MS, 2000 + sentence.length * 90));
         synth.speak(utterance);
       };
       next();

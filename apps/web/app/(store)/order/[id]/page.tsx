@@ -53,10 +53,7 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
       </div>
       <aside className="lg:col-span-5">
         <h2 className="display mb-3 text-3xl">Your bill</h2>
-        <Bill
-          totals={order}
-          discountLabel={order.voucherCode ? `Code ${order.voucherCode}` : "Discount"}
-        />
+        <Bill totals={order} discountLabel="Discount" discountNote={order.voucherCode} />
       </aside>
     </section>
   );

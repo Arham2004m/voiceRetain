@@ -17,7 +17,9 @@ function Row({
         aria-hidden
         className="border-ink/40 mb-1 min-w-4 flex-1 self-end border-b-2 border-dotted"
       />
-      <dd className={`num ${strong ? "display text-3xl" : "font-semibold"}`}>{value}</dd>
+      <dd className={`num whitespace-nowrap ${strong ? "display text-3xl" : "font-semibold"}`}>
+        {value}
+      </dd>
     </div>
   );
 }
@@ -33,11 +35,14 @@ export interface BillTotals {
 export function Bill({
   totals,
   discountLabel,
+  discountNote,
   footnote,
   className = "",
 }: {
   totals: BillTotals;
   discountLabel?: string;
+  /** The code behind the discount, shown small under its label so long codes never squeeze the amount. */
+  discountNote?: string;
   footnote?: ReactNode;
   className?: string;
 }) {
@@ -47,7 +52,14 @@ export function Bill({
         <Row label="Subtotal" value={formatINR(totals.subtotalPaise)} />
         {totals.discountPaise > 0 ? (
           <Row
-            label={<span className="text-kumkum">{discountLabel ?? "Discount"}</span>}
+            label={
+              <span className="text-kumkum">
+                {discountLabel ?? "Discount"}
+                {discountNote ? (
+                  <span className="block font-mono text-sm break-all">{discountNote}</span>
+                ) : null}
+              </span>
+            }
             value={<span className="text-kumkum">−{formatINR(totals.discountPaise)}</span>}
           />
         ) : null}
@@ -83,7 +95,8 @@ export function CartSummary({
     <Bill
       totals={totals}
       className={className}
-      discountLabel={`${percent}% off${code ? ` with ${code}` : ""}`}
+      discountLabel={`${percent}% off`}
+      discountNote={code}
       footnote={
         toFree > 0 && subtotalPaise > 0
           ? `Add ${formatINR(toFree)} more for free delivery.`

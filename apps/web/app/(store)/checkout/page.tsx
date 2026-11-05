@@ -32,6 +32,7 @@ function CheckoutFlow() {
   const [applied, setApplied] = useState<AppliedVoucher | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [placing, setPlacing] = useState(false);
+  const [placed, setPlaced] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [linkHandled, setLinkHandled] = useState(!linkCart);
   const started = useRef(false);
@@ -49,6 +50,7 @@ function CheckoutFlow() {
     else void adopt(linkCart).then(finish);
   }, [ready, linkCart, cart, adopt]);
 
+  if (placed) return <Loading>Order placed. Opening your bill</Loading>;
   if (!ready || !linkHandled) return <Loading>Getting your order ready</Loading>;
 
   if (!cart || cart.items.length === 0) {
@@ -96,6 +98,7 @@ function CheckoutFlow() {
     setError(null);
     try {
       const order = await api.completeOrder(cart.id, applied?.code);
+      setPlaced(true); // keep this page from flashing "empty cart" while the bill loads
       clear();
       router.push(`/order/${order.id}`);
     } catch (err) {

@@ -140,6 +140,46 @@ describe("useSpeechSynthesis", () => {
     expect(result.current.speaking).toBe(false);
   });
 
+  it("does not stall the call when the browser never reports that an utterance ended", async () => {
+    vi.useFakeTimers();
+    try {
+      const { result } = renderHook(() => useSpeechSynthesis());
+      let done = false;
+      act(() => {
+        void result.current.speak("One. Two.").then(() => {
+          done = true;
+        });
+      });
+      expect(spoken).toHaveLength(1);
+      // No onend ever fires: a watchdog moves on after a time based on the sentence length.
+      await act(async () => vi.advanceTimersByTime(3000));
+      expect(spoken).toHaveLength(2);
+      expect(done).toBe(false);
+      await act(async () => vi.advanceTimersByTime(3000));
+      expect(done).toBe(true);
+      expect(result.current.speaking).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("does not fire the watchdog after the utterance ended normally", async () => {
+    vi.useFakeTimers();
+    try {
+      const { result } = renderHook(() => useSpeechSynthesis());
+      act(() => {
+        void result.current.speak("One. Two.");
+      });
+      await act(async () => spoken[0]!.onend?.());
+      expect(spoken).toHaveLength(2);
+      await act(async () => vi.advanceTimersByTime(1500));
+      // The first sentence's watchdog must not have advanced the queue a second time.
+      expect(spoken).toHaveLength(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("resolves immediately when speech synthesis is unavailable", async () => {
     // @ts-expect-error simulate an unsupported browser
     delete window.speechSynthesis;
