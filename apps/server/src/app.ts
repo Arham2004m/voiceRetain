@@ -6,6 +6,8 @@ import type { Env } from "./config/env";
 import type { Db } from "./db/prisma";
 import type { AbandonmentQueue } from "./queue/abandonment.queue";
 import { errorHandler, notFoundHandler } from "./http/errors";
+import type { Emitter } from "./realtime/emitter";
+import { ordersRoutes } from "./routes/orders.routes";
 import { healthRoutes } from "./routes/health.routes";
 import { productsRoutes } from "./routes/products.routes";
 import { cartsRoutes } from "./routes/carts.routes";
@@ -16,6 +18,9 @@ export interface AppDeps {
   prisma: Db;
   redis: Redis;
   queue: AbandonmentQueue;
+  emitter: Emitter;
+  /** Debounced dashboard metrics broadcaster (a no-op until Stage 9). */
+  metrics: { schedule(): void };
   env: Env;
 }
 
@@ -29,6 +34,7 @@ export function createApp(deps: AppDeps): express.Express {
   app.use("/api", cartsRoutes(deps));
   app.use("/api", webhookRoutes(deps));
   app.use("/api", vouchersRoutes(deps));
+  app.use("/api", ordersRoutes(deps));
   app.use(notFoundHandler);
   app.use(errorHandler);
   return app;

@@ -24,6 +24,8 @@ async function main() {
 
   const httpServer = createServer();
   const { io, emitter } = createSocketServer(httpServer, { env });
+  // Replaced by the debounced broadcaster in Stage 9.
+  const metrics = { schedule: () => undefined };
   const callService = createCallService({
     db: prisma,
     redis,
@@ -33,10 +35,10 @@ async function main() {
     // Replaced by the real agent and analyzer in Stage 6, and the metrics broadcaster in Stage 9.
     agent: stubAgent,
     analyzer: stubAnalyzer,
-    metrics: { schedule: () => undefined },
+    metrics,
   });
   attachSocketHandlers(io, { callService });
-  httpServer.on("request", createApp({ prisma, redis, queue, env }));
+  httpServer.on("request", createApp({ prisma, redis, queue, emitter, metrics, env }));
 
   await callService.recoverStaleCalls();
 

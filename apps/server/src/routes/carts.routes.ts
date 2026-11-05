@@ -1,5 +1,11 @@
 import { Router } from "express";
-import { CheckoutInput, CreateCartInput, ReplaceCartItemsInput } from "@voiceretain/shared";
+import {
+  CheckoutInput,
+  CompleteOrderInput,
+  CreateCartInput,
+  ReplaceCartItemsInput,
+} from "@voiceretain/shared";
+import { completeOrder } from "../services/order.service";
 import type { AppDeps } from "../app";
 import { perMinuteLimiter } from "../http/rate-limit";
 import { validate } from "../http/validate";
@@ -31,6 +37,10 @@ export function cartsRoutes(deps: AppDeps): Router {
       res.json(await startCheckout(deps, String(req.params.id), req.body));
     },
   );
+
+  router.post("/carts/:id/complete", validate(CompleteOrderInput, "body"), async (req, res) => {
+    res.json(await completeOrder(deps, String(req.params.id), req.body.voucherCode));
+  });
 
   return router;
 }
