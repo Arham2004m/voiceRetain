@@ -1,0 +1,126 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import type { VoucherCard } from "@voiceretain/shared";
+import type { MicPermission } from "@/lib/speech/useSpeechRecognition";
+import type { PhoneState, TranscriptLine } from "@/lib/phone/usePhoneCall";
+import { TranscriptView } from "./TranscriptView";
+import { TypedInput } from "./TypedInput";
+import { VoucherCardView } from "./VoucherCardView";
+
+interface Props {
+  state: PhoneState;
+  transcript: TranscriptLine[];
+  voucher?: VoucherCard;
+  answeredAt: number | null;
+  muted: boolean;
+  hangingUp: boolean;
+  recognition: {
+    supported: boolean;
+    permission: MicPermission;
+    listening: boolean;
+    interim: string;
+  };
+  onSend: (text: string) => void;
+  onToggleMute: () => void;
+  onHangup: () => void;
+}
+
+export const formatClock = (seconds: number) =>
+  `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+
+function useElapsed(since: number | null) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+  return since === null ? 0 : Math.max(0, Math.floor((now - since) / 1000));
+}
+
+export function InCallScreen(props: Props) {
+  const { state, recognition, muted, hangingUp } = props;
+  const elapsed = useElapsed(props.answeredAt);
+
+  const micUsable = recognition.supported && recognition.permission !== "denied";
+  const status = hangingUp
+    ? "Ending call…"
+    : state === "connecting"
+      ? "Connecting…"
+      : state === "speaking"
+        ? "Agent speaking"
+        : state === "thinking"
+          ? "Thinking…"
+          : !micUsable
+            ? "Your turn"
+            : muted
+              ? "Microphone muted"
+              : "Listening";
+
+  const notice = !recognition.supported
+    ? "Voice works best in Chrome or Edge — type your replies below."
+    : recognition.permission === "denied"
+      ? "Microphone access is blocked. Type your replies below, or allow the microphone in your browser settings."
+      : null;
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col pt-7">
+      <header className="flex items-end justify-between px-4 pb-2">
+        <div>
+          <h2 className="display text-4xl">ShopNest</h2>
+          <p className="num text-paper/70 text-sm">{formatClock(elapsed)}</p>
+        </div>
+        <p
+          className="bg-paper/10 flex items-center gap-2 px-3 py-1.5 text-sm font-semibold"
+          aria-live="polite"
+        >
+          <span
+            aria-hidden
+            className={`size-2 rounded-full ${
+              state === "speaking"
+                ? "bg-marigold"
+                : state === "thinking"
+                  ? "bg-paper/60"
+                  : "bg-leaf"
+            }`}
+          />
+          {status}
+        </p>
+      </header>
+
+      <TranscriptView lines={props.transcript} interim={recognition.interim} />
+
+      {props.voucher ? (
+        <div className="px-4 pb-3">
+          <VoucherCardView voucher={props.voucher} />
+        </div>
+      ) : null}
+
+      {notice ? <p className="text-marigold px-4 pb-2 text-sm">{notice}</p> : null}
+
+      <div className="flex items-center gap-2 px-4 pb-3">
+        {recognition.supported ? (
+          <button
+            type="button"
+            onClick={props.onToggleMute}
+            aria-pressed={muted}
+            aria-label={muted ? "Unmute microphone" : "Mute microphone"}
+            className="border-paper/40 hover:bg-paper hover:text-ink min-h-11 cursor-pointer border-2 px-4 font-semibold transition-colors aria-pressed:bg-paper aria-pressed:text-ink"
+          >
+            {muted ? "Unmute" : "Mute"}
+          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={props.onHangup}
+          disabled={hangingUp}
+          className="bg-kumkum hover:bg-paper hover:text-kumkum min-h-11 flex-1 cursor-pointer px-4 font-semibold transition-colors disabled:pointer-events-none disabled:opacity-50"
+        >
+          Hang up
+        </button>
+      </div>
+
+      <TypedInput onSend={props.onSend} autoFocus={!micUsable} />
+    </div>
+  );
+}
