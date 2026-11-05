@@ -1,10 +1,10 @@
 import { Router } from "express";
 import type { AppDeps } from "../app";
 
-export function healthRoutes({ db, redis }: Pick<AppDeps, "db" | "redis">): Router {
+export function healthRoutes({ prisma, redis }: Pick<AppDeps, "prisma" | "redis">): Router {
   const router = Router();
   router.get("/health", async (_req, res) => {
-    const [dbRes, redisRes] = await Promise.allSettled([db.ping(), redis.ping()]);
+    const [dbRes, redisRes] = await Promise.allSettled([prisma.$queryRaw`SELECT 1`, redis.ping()]);
     const status = {
       db: dbRes.status === "fulfilled" ? "up" : "down",
       redis: redisRes.status === "fulfilled" ? "up" : "down",

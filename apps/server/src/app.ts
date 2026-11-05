@@ -1,14 +1,20 @@
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
+import type { Redis } from "ioredis";
 import type { Env } from "./config/env";
+import type { Db } from "./db/prisma";
+import type { AbandonmentQueue } from "./queue/abandonment.queue";
 import { errorHandler, notFoundHandler } from "./http/errors";
 import { healthRoutes } from "./routes/health.routes";
+import { productsRoutes } from "./routes/products.routes";
+import { cartsRoutes } from "./routes/carts.routes";
+import { webhookRoutes } from "./routes/webhook.routes";
 
 export interface AppDeps {
-  /** Minimal database handle for now; Stage 2 adds the Prisma client alongside it. */
-  db: { ping(): Promise<void> };
-  redis: { ping(): Promise<unknown> };
+  prisma: Db;
+  redis: Redis;
+  queue: AbandonmentQueue;
   env: Env;
 }
 
@@ -18,6 +24,9 @@ export function createApp(deps: AppDeps): express.Express {
   app.use(cors({ origin: deps.env.WEB_ORIGIN }));
   app.use(express.json({ limit: "100kb" }));
   app.use("/api", healthRoutes(deps));
+  app.use("/api", productsRoutes(deps));
+  app.use("/api", cartsRoutes(deps));
+  app.use("/api", webhookRoutes(deps));
   app.use(notFoundHandler);
   app.use(errorHandler);
   return app;
