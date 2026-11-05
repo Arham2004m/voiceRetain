@@ -1,7 +1,19 @@
 import { Router } from "express";
+import { CartAbandonedWebhookInput } from "@voiceretain/shared";
 import type { AppDeps } from "../app";
+import { perMinuteLimiter } from "../http/rate-limit";
+import { validate } from "../http/validate";
+import { handleCartAbandonedWebhook } from "../services/checkout.service";
 
-// Filled in by Task 3.4 (POST /api/cart-abandoned).
-export function webhookRoutes(_deps: AppDeps): Router {
-  return Router();
+export function webhookRoutes(deps: AppDeps): Router {
+  const router = Router();
+  router.post(
+    "/cart-abandoned",
+    perMinuteLimiter(),
+    validate(CartAbandonedWebhookInput, "body"),
+    async (req, res) => {
+      res.json(await handleCartAbandonedWebhook(deps, req.body));
+    },
+  );
+  return router;
 }
