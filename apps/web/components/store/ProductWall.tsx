@@ -19,7 +19,7 @@ const SKELETON_SPANS = [
 
 function DeliveryTile() {
   return (
-    <aside className="bg-ink text-paper flex min-h-[25rem] flex-col justify-between p-6 lg:col-span-5">
+    <aside className="bg-ink text-paper flex min-h-[31rem] flex-col justify-between p-6 lg:col-span-5">
       <p className="display text-[3.4rem] sm:text-7xl">
         Free delivery
         <br />
@@ -74,7 +74,7 @@ export function ProductWall() {
         {SKELETON_SPANS.map((span, i) => (
           <div
             key={i}
-            className={`bg-ink/10 min-h-[25rem] animate-pulse motion-reduce:animate-none ${span}`}
+            className={`bg-ink/10 min-h-[31rem] animate-pulse motion-reduce:animate-none ${span}`}
           />
         ))}
       </div>

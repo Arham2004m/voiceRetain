@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ButtonLink } from "@/components/ui/Button";
 
-export const metadata: Metadata = { title: "You left ShopNest" };
+export const metadata: Metadata = { title: "Cart saved" };
 
 export default function LeftPage() {
   return (

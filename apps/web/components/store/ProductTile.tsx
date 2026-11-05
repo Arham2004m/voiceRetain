@@ -38,17 +38,22 @@ export function ProductTile({
 
   return (
     <article
-      className={`group relative flex min-h-[25rem] flex-col justify-end overflow-hidden p-6 ${art.tile} ${art.span}`}
+      className={`group relative flex min-h-[31rem] flex-col overflow-hidden p-6 ${art.tile} ${art.span}`}
     >
       <PriceTag pricePaise={product.pricePaise} />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={product.imageUrl}
-        alt=""
-        loading={priority ? "eager" : "lazy"}
-        className="pointer-events-none absolute top-12 left-1/2 h-[58%] w-auto max-w-[78%] -translate-x-1/2 object-contain transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"
-      />
-      <div className="relative z-10 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+
+      {/* The art keeps clear of the tag on the right and of the text below. */}
+      <div className="mt-28 min-h-[11rem] flex-1 sm:mt-12 sm:mr-[8.5rem]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={product.imageUrl}
+          alt=""
+          loading={priority ? "eager" : "lazy"}
+          className="pointer-events-none h-full w-full origin-bottom-left object-contain object-left transition-transform duration-300 group-hover:scale-[1.04] motion-reduce:transition-none"
+        />
+      </div>
+
+      <div className="relative z-10 mt-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
         <div className="max-w-[26rem]">
           <h2 className="display text-[2.6rem] sm:text-5xl">{product.name}</h2>
           <p className="mt-2 text-[0.95rem] opacity-90">{product.description}</p>
