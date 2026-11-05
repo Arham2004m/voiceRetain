@@ -43,7 +43,21 @@ export interface CallService {
   markMissed(callId: string): Promise<void>;
   getActiveCallForPhone(phone: string): Promise<IncomingCallPayload | null>;
   recoverStaleCalls(): Promise<number>;
+  /** Throws CallError unless the call belongs to the phone and is in the given status. */
+  assertCallAccess(callId: string, phone: string, status: "RINGING" | "IN_PROGRESS"): Promise<void>;
+  handleUtterance(callId: string, phone: string, text: string): Promise<void>;
+  endCall(callId: string, reason: EndReason): Promise<void>;
+  handleDisconnect(phone: string): Promise<void>;
+  handleReconnect(phone: string): Promise<void>;
 }
+
+export type EndReason =
+  | "CUSTOMER_HANGUP"
+  | "AGENT_ENDED"
+  | "MAX_DURATION"
+  | "DISCONNECTED"
+  | "LLM_FAILURE"
+  | "SERVER_RESTART";
 
 export function createCallService(deps: CallServiceDeps): CallService {
   const { db, redis, emitter, timers, env, metrics } = deps;
@@ -121,7 +135,7 @@ export function createCallService(deps: CallServiceDeps): CallService {
 
       timers.clear("ring", callId);
       timers.set("maxDuration", callId, env.MAX_CALL_DURATION_MS, () =>
-        (service as FullCallService).endCall?.(callId, "MAX_DURATION"),
+        service.endCall(callId, "MAX_DURATION"),
       );
 
       const text = buildGreeting({
@@ -179,6 +193,22 @@ export function createCallService(deps: CallServiceDeps): CallService {
       };
     },
 
+    async assertCallAccess(callId, phone, status) {
+      const call = await loadOwned(callId, phone);
+      if (call.status !== status)
+        throw new CallError("BAD_STATE", `Call is not ${status.toLowerCase()}`);
+    },
+
+    // Task 4.3 — implemented after their tests.
+    async handleUtterance() {
+      throw new Error("not implemented");
+    },
+    async endCall() {
+      throw new Error("not implemented");
+    },
+    async handleDisconnect() {},
+    async handleReconnect() {},
+
     async recoverStaleCalls() {
       const now = Date.now();
       let cleaned = 0;
@@ -197,13 +227,12 @@ export function createCallService(deps: CallServiceDeps): CallService {
         } else {
           const base = (call.answeredAt ?? call.startedAt).getTime();
           const remaining = base + env.MAX_CALL_DURATION_MS - now;
-          const full = service as FullCallService;
           if (remaining <= 0) {
-            await full.endCall?.(call.id, "SERVER_RESTART");
+            await service.endCall(call.id, "SERVER_RESTART");
             cleaned++;
           } else {
             timers.set("maxDuration", call.id, remaining, () =>
-              full.endCall?.(call.id, "MAX_DURATION"),
+              service.endCall(call.id, "MAX_DURATION"),
             );
           }
         }
@@ -215,8 +244,3 @@ export function createCallService(deps: CallServiceDeps): CallService {
 
   return service;
 }
-
-/** Methods added in Task 4.3; typed optional here so Task 4.1 compiles on its own. */
-type FullCallService = CallService & {
-  endCall?: (callId: string, reason: string) => Promise<void>;
-};
