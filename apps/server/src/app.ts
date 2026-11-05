@@ -10,6 +10,7 @@ import { healthRoutes } from "./routes/health.routes";
 import { productsRoutes } from "./routes/products.routes";
 import { cartsRoutes } from "./routes/carts.routes";
 import { webhookRoutes } from "./routes/webhook.routes";
+import { vouchersRoutes } from "./routes/vouchers.routes";
 
 export interface AppDeps {
   prisma: Db;
@@ -27,6 +28,7 @@ export function createApp(deps: AppDeps): express.Express {
   app.use("/api", productsRoutes(deps));
   app.use("/api", cartsRoutes(deps));
   app.use("/api", webhookRoutes(deps));
+  app.use("/api", vouchersRoutes(deps));
   app.use(notFoundHandler);
   app.use(errorHandler);
   return app;
