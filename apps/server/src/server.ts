@@ -11,29 +11,48 @@ const { createRedis } = await import("./lib/redis");
 const { logger } = await import("./lib/logger");
 const { createAbandonmentQueue } = await import("./queue/abandonment.queue");
 const { startAbandonmentWorker } = await import("./queue/abandonment.worker");
+const { createSocketServer, attachSocketHandlers } = await import("./realtime/socket");
+const { createCallService } = await import("./calls/call.service");
+const { CallTimers } = await import("./calls/call.timers");
+const { stubAgent, stubAnalyzer } = await import("./agent/stub-agent");
 
 async function main() {
   const env = getEnv();
   const prisma = createPrisma(env.DATABASE_URL);
   const redis = createRedis(env.REDIS_URL);
   const queue = createAbandonmentQueue(redis);
+
+  const httpServer = createServer();
+  const { io, emitter } = createSocketServer(httpServer, { env });
+  const callService = createCallService({
+    db: prisma,
+    redis,
+    emitter,
+    timers: new CallTimers(),
+    env,
+    // Replaced by the real agent and analyzer in Stage 6, and the metrics broadcaster in Stage 9.
+    agent: stubAgent,
+    analyzer: stubAnalyzer,
+    metrics: { schedule: () => undefined },
+  });
+  attachSocketHandlers(io, { callService });
+  httpServer.on("request", createApp({ prisma, redis, queue, env }));
+
+  await callService.recoverStaleCalls();
+
   const workerConnection = createRedis(env.REDIS_URL, { forBullMQ: true });
   const worker = startAbandonmentWorker({
     db: prisma,
     connection: workerConnection,
-    // Replaced by CallService.startCall in Stage 4.
-    startCall: async (cartId) => {
-      logger.info({ cartId }, "startCall (stub): would ring the customer's phone");
-    },
+    startCall: (cartId, tx) => callService.startCallInTx(cartId, tx),
   });
 
-  const httpServer = createServer(createApp({ prisma, redis, queue, env }));
   httpServer.listen(env.PORT, () => logger.info(`server listening on :${env.PORT}`));
 
   const shutdown = async () => {
     logger.info("shutting down");
-    httpServer.close();
     await worker.close();
+    await io.close();
     await queue.close();
     await Promise.allSettled([prisma.$disconnect(), redis.quit(), workerConnection.quit()]);
     process.exit(0);
