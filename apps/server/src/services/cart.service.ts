@@ -11,7 +11,10 @@ const EDITABLE = new Set(["ACTIVE", "CHECKOUT_STARTED", "ABANDONED"]);
 const MAX_QTY = 10;
 
 export async function listProducts(db: Db): Promise<ProductDTO[]> {
-  const products = await db.product.findMany({ orderBy: { name: "asc" } });
+  const products = await db.product.findMany({
+    where: { active: true },
+    orderBy: [{ category: "asc" }, { name: "asc" }],
+  });
   return products.map(toProductDTO);
 }
 
@@ -21,7 +24,9 @@ async function resolveItems(db: Db | Tx, items: ItemInput[]) {
   for (const i of items) {
     merged.set(i.productId, Math.min(MAX_QTY, (merged.get(i.productId) ?? 0) + i.quantity));
   }
-  const products = await db.product.findMany({ where: { id: { in: [...merged.keys()] } } });
+  const products = await db.product.findMany({
+    where: { id: { in: [...merged.keys()] }, active: true },
+  });
   if (products.length !== merged.size) throw unprocessable("One or more products do not exist");
   const rows = products.map((p) => ({
     productId: p.id,

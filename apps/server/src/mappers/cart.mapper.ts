@@ -16,6 +16,7 @@ export function toProductDTO(p: Product): ProductDTO {
     description: p.description,
     pricePaise: p.pricePaise,
     imageUrl: p.imageUrl,
+    category: p.category,
   };
 }
 

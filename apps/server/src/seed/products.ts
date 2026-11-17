@@ -37,7 +37,7 @@ export const PRODUCTS = [
     description: "Dimmable LED lamp with three colour temperatures and a USB port.",
     pricePaise: 89900,
   },
-].map((p) => ({ ...p, imageUrl: `/products/${p.slug}.svg` }));
+].map((p) => ({ ...p, category: "everyday", imageUrl: `/products/${p.slug}.svg` }));
 
 export async function seedProducts(db: Db): Promise<void> {
   for (const p of PRODUCTS) {
@@ -48,6 +48,8 @@ export async function seedProducts(db: Db): Promise<void> {
         description: p.description,
         pricePaise: p.pricePaise,
         imageUrl: p.imageUrl,
+        category: p.category,
+        active: true,
       },
       create: p,
     });

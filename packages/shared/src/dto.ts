@@ -15,6 +15,7 @@ export interface ProductDTO {
   description: string;
   pricePaise: number;
   imageUrl: string;
+  category: string;
 }
 
 export interface CartDTO {

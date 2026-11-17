@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: { default: "ShopNest", template: "%s · ShopNest" },
-  description: "Everyday things for desk, commute and gym.",
+  description: "Useful things, delivered to your door.",
 };
 
 export const viewport: Viewport = {

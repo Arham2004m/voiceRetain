@@ -40,6 +40,8 @@ export type ProductMinAggregateOutputType = {
   description: string | null;
   pricePaise: number | null;
   imageUrl: string | null;
+  category: string | null;
+  active: boolean | null;
 };
 
 export type ProductMaxAggregateOutputType = {
@@ -49,6 +51,8 @@ export type ProductMaxAggregateOutputType = {
   description: string | null;
   pricePaise: number | null;
   imageUrl: string | null;
+  category: string | null;
+  active: boolean | null;
 };
 
 export type ProductCountAggregateOutputType = {
@@ -58,6 +62,8 @@ export type ProductCountAggregateOutputType = {
   description: number;
   pricePaise: number;
   imageUrl: number;
+  category: number;
+  active: number;
   _all: number;
 };
 
@@ -76,6 +82,8 @@ export type ProductMinAggregateInputType = {
   description?: true;
   pricePaise?: true;
   imageUrl?: true;
+  category?: true;
+  active?: true;
 };
 
 export type ProductMaxAggregateInputType = {
@@ -85,6 +93,8 @@ export type ProductMaxAggregateInputType = {
   description?: true;
   pricePaise?: true;
   imageUrl?: true;
+  category?: true;
+  active?: true;
 };
 
 export type ProductCountAggregateInputType = {
@@ -94,6 +104,8 @@ export type ProductCountAggregateInputType = {
   description?: true;
   pricePaise?: true;
   imageUrl?: true;
+  category?: true;
+  active?: true;
   _all?: true;
 };
 
@@ -191,6 +203,8 @@ export type ProductGroupByOutputType = {
   description: string;
   pricePaise: number;
   imageUrl: string;
+  category: string;
+  active: boolean;
   _count: ProductCountAggregateOutputType | null;
   _avg: ProductAvgAggregateOutputType | null;
   _sum: ProductSumAggregateOutputType | null;
@@ -220,6 +234,8 @@ export type ProductWhereInput = {
   description?: Prisma.StringFilter<"Product"> | string;
   pricePaise?: Prisma.IntFilter<"Product"> | number;
   imageUrl?: Prisma.StringFilter<"Product"> | string;
+  category?: Prisma.StringFilter<"Product"> | string;
+  active?: Prisma.BoolFilter<"Product"> | boolean;
   cartItems?: Prisma.CartItemListRelationFilter;
 };
 
@@ -230,6 +246,8 @@ export type ProductOrderByWithRelationInput = {
   description?: Prisma.SortOrder;
   pricePaise?: Prisma.SortOrder;
   imageUrl?: Prisma.SortOrder;
+  category?: Prisma.SortOrder;
+  active?: Prisma.SortOrder;
   cartItems?: Prisma.CartItemOrderByRelationAggregateInput;
 };
 
@@ -244,6 +262,8 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<
     description?: Prisma.StringFilter<"Product"> | string;
     pricePaise?: Prisma.IntFilter<"Product"> | number;
     imageUrl?: Prisma.StringFilter<"Product"> | string;
+    category?: Prisma.StringFilter<"Product"> | string;
+    active?: Prisma.BoolFilter<"Product"> | boolean;
     cartItems?: Prisma.CartItemListRelationFilter;
   },
   "id" | "slug"
@@ -256,6 +276,8 @@ export type ProductOrderByWithAggregationInput = {
   description?: Prisma.SortOrder;
   pricePaise?: Prisma.SortOrder;
   imageUrl?: Prisma.SortOrder;
+  category?: Prisma.SortOrder;
+  active?: Prisma.SortOrder;
   _count?: Prisma.ProductCountOrderByAggregateInput;
   _avg?: Prisma.ProductAvgOrderByAggregateInput;
   _max?: Prisma.ProductMaxOrderByAggregateInput;
@@ -275,6 +297,8 @@ export type ProductScalarWhereWithAggregatesInput = {
   description?: Prisma.StringWithAggregatesFilter<"Product"> | string;
   pricePaise?: Prisma.IntWithAggregatesFilter<"Product"> | number;
   imageUrl?: Prisma.StringWithAggregatesFilter<"Product"> | string;
+  category?: Prisma.StringWithAggregatesFilter<"Product"> | string;
+  active?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean;
 };
 
 export type ProductCreateInput = {
@@ -284,6 +308,8 @@ export type ProductCreateInput = {
   description: string;
   pricePaise: number;
   imageUrl: string;
+  category?: string;
+  active?: boolean;
   cartItems?: Prisma.CartItemCreateNestedManyWithoutProductInput;
 };
 
@@ -294,6 +320,8 @@ export type ProductUncheckedCreateInput = {
   description: string;
   pricePaise: number;
   imageUrl: string;
+  category?: string;
+  active?: boolean;
   cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutProductInput;
 };
 
@@ -304,6 +332,8 @@ export type ProductUpdateInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string;
   pricePaise?: Prisma.IntFieldUpdateOperationsInput | number;
   imageUrl?: Prisma.StringFieldUpdateOperationsInput | string;
+  category?: Prisma.StringFieldUpdateOperationsInput | string;
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   cartItems?: Prisma.CartItemUpdateManyWithoutProductNestedInput;
 };
 
@@ -314,6 +344,8 @@ export type ProductUncheckedUpdateInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string;
   pricePaise?: Prisma.IntFieldUpdateOperationsInput | number;
   imageUrl?: Prisma.StringFieldUpdateOperationsInput | string;
+  category?: Prisma.StringFieldUpdateOperationsInput | string;
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutProductNestedInput;
 };
 
@@ -324,6 +356,8 @@ export type ProductCreateManyInput = {
   description: string;
   pricePaise: number;
   imageUrl: string;
+  category?: string;
+  active?: boolean;
 };
 
 export type ProductUpdateManyMutationInput = {
@@ -333,6 +367,8 @@ export type ProductUpdateManyMutationInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string;
   pricePaise?: Prisma.IntFieldUpdateOperationsInput | number;
   imageUrl?: Prisma.StringFieldUpdateOperationsInput | string;
+  category?: Prisma.StringFieldUpdateOperationsInput | string;
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 };
 
 export type ProductUncheckedUpdateManyInput = {
@@ -342,6 +378,8 @@ export type ProductUncheckedUpdateManyInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string;
   pricePaise?: Prisma.IntFieldUpdateOperationsInput | number;
   imageUrl?: Prisma.StringFieldUpdateOperationsInput | string;
+  category?: Prisma.StringFieldUpdateOperationsInput | string;
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 };
 
 export type ProductCountOrderByAggregateInput = {
@@ -351,6 +389,8 @@ export type ProductCountOrderByAggregateInput = {
   description?: Prisma.SortOrder;
   pricePaise?: Prisma.SortOrder;
   imageUrl?: Prisma.SortOrder;
+  category?: Prisma.SortOrder;
+  active?: Prisma.SortOrder;
 };
 
 export type ProductAvgOrderByAggregateInput = {
@@ -364,6 +404,8 @@ export type ProductMaxOrderByAggregateInput = {
   description?: Prisma.SortOrder;
   pricePaise?: Prisma.SortOrder;
   imageUrl?: Prisma.SortOrder;
+  category?: Prisma.SortOrder;
+  active?: Prisma.SortOrder;
 };
 
 export type ProductMinOrderByAggregateInput = {
@@ -373,6 +415,8 @@ export type ProductMinOrderByAggregateInput = {
   description?: Prisma.SortOrder;
   pricePaise?: Prisma.SortOrder;
   imageUrl?: Prisma.SortOrder;
+  category?: Prisma.SortOrder;
+  active?: Prisma.SortOrder;
 };
 
 export type ProductSumOrderByAggregateInput = {
@@ -417,6 +461,8 @@ export type ProductCreateWithoutCartItemsInput = {
   description: string;
   pricePaise: number;
   imageUrl: string;
+  category?: string;
+  active?: boolean;
 };
 
 export type ProductUncheckedCreateWithoutCartItemsInput = {
@@ -426,6 +472,8 @@ export type ProductUncheckedCreateWithoutCartItemsInput = {
   description: string;
   pricePaise: number;
   imageUrl: string;
+  category?: string;
+  active?: boolean;
 };
 
 export type ProductCreateOrConnectWithoutCartItemsInput = {
@@ -463,6 +511,8 @@ export type ProductUpdateWithoutCartItemsInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string;
   pricePaise?: Prisma.IntFieldUpdateOperationsInput | number;
   imageUrl?: Prisma.StringFieldUpdateOperationsInput | string;
+  category?: Prisma.StringFieldUpdateOperationsInput | string;
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 };
 
 export type ProductUncheckedUpdateWithoutCartItemsInput = {
@@ -472,6 +522,8 @@ export type ProductUncheckedUpdateWithoutCartItemsInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string;
   pricePaise?: Prisma.IntFieldUpdateOperationsInput | number;
   imageUrl?: Prisma.StringFieldUpdateOperationsInput | string;
+  category?: Prisma.StringFieldUpdateOperationsInput | string;
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 };
 
 /**
@@ -519,6 +571,8 @@ export type ProductSelect<
     description?: boolean;
     pricePaise?: boolean;
     imageUrl?: boolean;
+    category?: boolean;
+    active?: boolean;
     cartItems?: boolean | Prisma.Product$cartItemsArgs<ExtArgs>;
     _count?: boolean | Prisma.ProductCountOutputTypeDefaultArgs<ExtArgs>;
   },
@@ -535,6 +589,8 @@ export type ProductSelectCreateManyAndReturn<
     description?: boolean;
     pricePaise?: boolean;
     imageUrl?: boolean;
+    category?: boolean;
+    active?: boolean;
   },
   ExtArgs["result"]["product"]
 >;
@@ -549,6 +605,8 @@ export type ProductSelectUpdateManyAndReturn<
     description?: boolean;
     pricePaise?: boolean;
     imageUrl?: boolean;
+    category?: boolean;
+    active?: boolean;
   },
   ExtArgs["result"]["product"]
 >;
@@ -560,12 +618,14 @@ export type ProductSelectScalar = {
   description?: boolean;
   pricePaise?: boolean;
   imageUrl?: boolean;
+  category?: boolean;
+  active?: boolean;
 };
 
 export type ProductOmit<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetOmit<
-  "id" | "slug" | "name" | "description" | "pricePaise" | "imageUrl",
+  "id" | "slug" | "name" | "description" | "pricePaise" | "imageUrl" | "category" | "active",
   ExtArgs["result"]["product"]
 >;
 export type ProductInclude<
@@ -596,6 +656,8 @@ export type $ProductPayload<
       description: string;
       pricePaise: number;
       imageUrl: string;
+      category: string;
+      active: boolean;
     },
     ExtArgs["result"]["product"]
   >;
@@ -1159,6 +1221,8 @@ export interface ProductFieldRefs {
   readonly description: Prisma.FieldRef<"Product", "String">;
   readonly pricePaise: Prisma.FieldRef<"Product", "Int">;
   readonly imageUrl: Prisma.FieldRef<"Product", "String">;
+  readonly category: Prisma.FieldRef<"Product", "String">;
+  readonly active: Prisma.FieldRef<"Product", "Boolean">;
 }
 
 // Custom InputTypes

@@ -25,6 +25,9 @@ const schema = z
     MIN_CART_FOR_DISCOUNT_PAISE: int(50000),
     VOUCHER_TTL_HOURS: int(24),
     DEMO_MODE: bool.default("true"),
+    CATALOGUE_URL: z.string().url().default("https://dummyjson.com/products"),
+    /** Rupees per US dollar; the product catalogue is priced in dollars. */
+    CATALOGUE_USD_TO_INR: z.coerce.number().positive().default(85),
   })
   .superRefine((v, ctx) => {
     if (!v.MOCK_LLM && !v.GEMINI_API_KEY) {

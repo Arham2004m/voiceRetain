@@ -83,7 +83,11 @@ model Product {
   description String
   pricePaise  Int
   imageUrl    String
+  category    String     @default("general")
+  active      Boolean    @default(true)
   cartItems   CartItem[]
+
+  @@index([active, category])
 }
 
 model Cart {

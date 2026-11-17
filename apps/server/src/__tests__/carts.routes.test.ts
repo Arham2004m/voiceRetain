@@ -26,6 +26,31 @@ describe("GET /api/products", () => {
   });
 });
 
+describe("retired products", () => {
+  it("are not listed", async () => {
+    await ctx.prisma.product.update({ where: { slug: "cotton-hoodie" }, data: { active: false } });
+    const res = await request(ctx.app).get("/api/products");
+    expect(res.body).toHaveLength(5);
+    expect(res.body.map((p: { slug: string }) => p.slug)).not.toContain("cotton-hoodie");
+  });
+
+  it("include the category in each product", async () => {
+    const res = await request(ctx.app).get("/api/products");
+    expect(res.body[0]).toMatchObject({ category: "everyday" });
+  });
+
+  it("cannot be added to a cart (422)", async () => {
+    const hoodie = await ctx.prisma.product.update({
+      where: { slug: "cotton-hoodie" },
+      data: { active: false },
+    });
+    const res = await request(ctx.app)
+      .post("/api/carts")
+      .send({ items: [{ productId: hoodie.id, quantity: 1 }] });
+    expect(res.status).toBe(422);
+  });
+});
+
 describe("carts", () => {
   it("POST /api/carts with 2 x earbuds gives subtotal 299800", async () => {
     const res = await request(ctx.app)
