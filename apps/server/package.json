@@ -1,0 +1,44 @@
+{
+  "name": "@voiceretain/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit",
+    "smoke": "tsx scripts/smoke-call.ts",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:reset": "prisma migrate reset --force",
+    "db:seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@google/genai": "^2.32.0",
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "@voiceretain/shared": "*",
+    "bullmq": "^6.7.0",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.3",
+    "helmet": "^8.3.0",
+    "ioredis": "^6.0.0",
+    "pg": "^8.23.1",
+    "pino": "^10.4.0",
+    "socket.io": "^4.8.4",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/pg": "^8.23.1",
+    "@types/supertest": "^7.2.1",
+    "pino-pretty": "^13.2.0",
+    "prisma": "7.10.1",
+    "socket.io-client": "^4.8.4",
+    "supertest": "^7.3.1",
+    "tsx": "^4.23.15"
+  }
+}

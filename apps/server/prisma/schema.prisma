@@ -1,0 +1,190 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CartStatus {
+  ACTIVE
+  CHECKOUT_STARTED
+  ABANDONED
+  RECOVERED
+  COMPLETED
+}
+
+enum CallStatus {
+  RINGING
+  IN_PROGRESS
+  ENDED
+  MISSED
+}
+
+enum CallOutcome {
+  PENDING
+  RECOVERED
+  ACCEPTED_OFFER
+  UNDECIDED
+  DECLINED
+  NO_ANSWER
+}
+
+enum Sentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
+enum Objection {
+  SHIPPING_COST
+  PRICE
+  TRUST
+  TIMING
+  CHANGED_MIND
+  OTHER
+  NONE
+}
+
+enum Speaker {
+  AGENT
+  CUSTOMER
+  SYSTEM
+}
+
+enum VoucherStatus {
+  ACTIVE
+  SUPERSEDED
+  REDEEMED
+  EXPIRED
+}
+
+
+model Customer {
+  id                 String    @id @default(cuid())
+  name               String
+  phone              String    @unique
+  email              String?
+  consentToCall      Boolean   @default(false)
+  lifetimeValuePaise Int       @default(0)
+  isActive           Boolean   @default(true)
+  isSeed             Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  carts              Cart[]
+  calls              CallLog[]
+}
+
+model Product {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  name        String
+  description String
+  pricePaise  Int
+  imageUrl    String
+  category    String     @default("general")
+  active      Boolean    @default(true)
+  cartItems   CartItem[]
+
+  @@index([active, category])
+}
+
+model Cart {
+  id                String     @id @default(cuid())
+  customerId        String?
+  customer          Customer?  @relation(fields: [customerId], references: [id])
+  status            CartStatus @default(ACTIVE)
+  subtotalPaise     Int        @default(0)
+  checkoutStartedAt DateTime?
+  abandonedAt       DateTime?
+  completedAt       DateTime?
+  isSeed            Boolean    @default(false)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  items             CartItem[]
+  calls             CallLog[]
+  vouchers          Voucher[]
+  order             Order?
+
+  @@index([status, checkoutStartedAt])
+}
+
+model CartItem {
+  id             String  @id @default(cuid())
+  cartId         String
+  cart           Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId      String
+  product        Product @relation(fields: [productId], references: [id])
+  quantity       Int
+  unitPricePaise Int
+
+  @@unique([cartId, productId])
+}
+
+model CallLog {
+  id           String           @id @default(cuid())
+  cartId       String
+  cart         Cart             @relation(fields: [cartId], references: [id])
+  customerId   String
+  customer     Customer         @relation(fields: [customerId], references: [id])
+  status       CallStatus       @default(RINGING)
+  outcome      CallOutcome      @default(PENDING)
+  sentiment    Sentiment?
+  objection    Objection?
+  summary      String?
+  endReason    String?
+  startedAt    DateTime         @default(now())
+  answeredAt   DateTime?
+  endedAt      DateTime?
+  durationSec  Int?
+  avgLatencyMs Int?
+  isSeed       Boolean          @default(false)
+  turns        TranscriptTurn[]
+  vouchers     Voucher[]
+
+  @@index([status])
+  @@index([startedAt])
+  @@index([outcome])
+}
+
+model TranscriptTurn {
+  id        String   @id @default(cuid())
+  callId    String
+  call      CallLog  @relation(fields: [callId], references: [id], onDelete: Cascade)
+  speaker   Speaker
+  text      String
+  latencyMs Int?
+  createdAt DateTime @default(now())
+
+  @@index([callId, createdAt])
+}
+
+model Voucher {
+  id         String        @id @default(cuid())
+  code       String        @unique
+  percent    Int
+  status     VoucherStatus @default(ACTIVE)
+  cartId     String
+  cart       Cart          @relation(fields: [cartId], references: [id])
+  callId     String?
+  call       CallLog?      @relation(fields: [callId], references: [id])
+  expiresAt  DateTime
+  redeemedAt DateTime?
+  createdAt  DateTime      @default(now())
+  order      Order?
+
+  @@index([cartId, status])
+}
+
+model Order {
+  id            String   @id @default(cuid())
+  cartId        String   @unique
+  cart          Cart     @relation(fields: [cartId], references: [id])
+  voucherId     String?  @unique
+  voucher       Voucher? @relation(fields: [voucherId], references: [id])
+  subtotalPaise Int
+  discountPaise Int
+  totalPaise    Int
+  createdAt     DateTime @default(now())
+}
