@@ -97,7 +97,7 @@ All variables live in `.env` (see [.env.example](.env.example)).
 | `DATABASE_URL_TEST` | local Postgres | Database used by the server tests |
 | `REDIS_URL` | redis://localhost:6379 | Queue, caches, runtime config |
 | `GEMINI_API_KEY` | empty | Required when `MOCK_LLM=false` |
-| `GEMINI_MODEL` | gemini-3.5-flash | Model name |
+| `GEMINI_MODEL` | gemini-3.8-flash | Model name |
 | `MOCK_LLM` | false | Use the deterministic mock instead of Gemini |
 | `LLM_TIMEOUT_MS` | 8000 | Per-request model timeout |
 | `ABANDON_DELAY_MS` | 30000 | Wait before an unpaid checkout counts as abandoned |

@@ -14,7 +14,7 @@ const schema = z
     DATABASE_URL_TEST: z.string().min(1).optional(),
     REDIS_URL: z.string().min(1),
     GEMINI_API_KEY: z.string().optional(),
-    GEMINI_MODEL: z.string().min(1).default("gemini-3.5-flash"),
+    GEMINI_MODEL: z.string().min(1).default("gemini-3.8-flash"),
     MOCK_LLM: bool.default("false"),
     LLM_TIMEOUT_MS: int(8000),
     ABANDON_DELAY_MS: int(30000),

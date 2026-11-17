@@ -282,7 +282,7 @@ Sentiment comes from the analysis; it is separate from the outcome. When a cart 
 ## 8. AI agent specification
 
 ### 8.1 Model & SDK
-- SDK: `@google/genai`. Model id from env `GEMINI_MODEL`, default `gemini-3.5-flash`.
+- SDK: `@google/genai`. Model id from env `GEMINI_MODEL`, default `gemini-3.8-flash`.
 - Per-turn timeout `LLM_TIMEOUT_MS` (default `8000`). One retry on HTTP 429/5xx with 500 ms backoff, then fallback (§8.6).
 - All LLM access goes through the `LlmClient` interface (§Part 2, Task 6.1) so tests and `MOCK_LLM=true` never hit the network.
 
@@ -439,7 +439,7 @@ DATABASE_URL=postgresql://voiceretain:voiceretain@localhost:5432/voiceretain
 DATABASE_URL_TEST=postgresql://voiceretain:voiceretain@localhost:5432/voiceretain_test
 REDIS_URL=redis://localhost:6379
 GEMINI_API_KEY=
-GEMINI_MODEL=gemini-3.5-flash
+GEMINI_MODEL=gemini-3.8-flash
 MOCK_LLM=false
 LLM_TIMEOUT_MS=8000
 ABANDON_DELAY_MS=30000
