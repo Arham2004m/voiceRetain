@@ -11,7 +11,7 @@ import {
   VoucherStatusBadge,
 } from "@/components/dashboard/Badges";
 import { TranscriptChat } from "@/components/dashboard/TranscriptChat";
-import { endReasonLabel, objectionLabel } from "@/lib/dashboard/labels";
+import { effectiveVoucherStatus, endReasonLabel, objectionLabel } from "@/lib/dashboard/labels";
 import { useCallDetail } from "@/lib/dashboard/useCallDetail";
 import { formatDuration, formatLatency, formatPhone, formatWhen } from "@/lib/format";
 
@@ -107,7 +107,7 @@ export default function CallDetailPage({ params }: { params: Promise<{ id: strin
                         {v.percent}% off, valid until {formatWhen(v.expiresAt)}
                       </p>
                     </div>
-                    <VoucherStatusBadge status={v.status} />
+                    <VoucherStatusBadge status={effectiveVoucherStatus(v)} />
                   </li>
                 ))}
               </ul>

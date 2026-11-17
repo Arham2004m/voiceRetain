@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { VoucherDTO } from "@voiceretain/shared";
 import { formatWhen } from "@/lib/format";
+import { effectiveVoucherStatus } from "@/lib/dashboard/labels";
 import { VoucherStatusBadge } from "./Badges";
 
 const th = "px-3 py-2 text-left font-semibold";
@@ -41,7 +42,7 @@ export function VoucherTable({ vouchers }: { vouchers: VoucherDTO[] }) {
               <td className={`${td} font-mono font-bold tracking-wide`}>{v.code}</td>
               <td className={`${td} num`}>{v.percent}% off</td>
               <td className={td}>
-                <VoucherStatusBadge status={v.status} />
+                <VoucherStatusBadge status={effectiveVoucherStatus(v)} />
               </td>
               <td className={`${td} text-ink-soft whitespace-nowrap`}>{formatWhen(v.expiresAt)}</td>
               <td className={`${td} text-ink-soft whitespace-nowrap`}>

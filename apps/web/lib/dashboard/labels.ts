@@ -1,4 +1,4 @@
-import type { Objection } from "@voiceretain/shared";
+import type { Objection, VoucherStatus } from "@voiceretain/shared";
 
 const OBJECTIONS: Record<Objection, string> = {
   SHIPPING_COST: "Shipping cost",
@@ -24,3 +24,14 @@ const END_REASONS: Record<string, string> = {
 
 export const endReasonLabel = (reason: string | null) =>
   reason ? (END_REASONS[reason] ?? reason) : "Still going";
+
+/**
+ * The server only marks a code EXPIRED when someone tries to use it, so an old ACTIVE code can
+ * linger in the database. The dashboard shows what is actually true.
+ */
+export function effectiveVoucherStatus(
+  v: { status: VoucherStatus; expiresAt: string },
+  now: Date = new Date(),
+): VoucherStatus {
+  return v.status === "ACTIVE" && new Date(v.expiresAt) <= now ? "EXPIRED" : v.status;
+}
