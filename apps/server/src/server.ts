@@ -5,6 +5,7 @@ import { config } from "dotenv";
 config({ path: fileURLToPath(new URL("../../../.env", import.meta.url)), quiet: true });
 
 const { createApp } = await import("./app");
+const { seedHistory } = await import("./seed/history");
 const { getEnv } = await import("./config/env");
 const { createPrisma } = await import("./db/prisma");
 const { createRedis } = await import("./lib/redis");
@@ -44,7 +45,19 @@ async function main() {
     metrics,
   });
   attachSocketHandlers(io, { callService });
-  httpServer.on("request", createApp({ prisma, redis, queue, emitter, metrics, env }));
+  httpServer.on(
+    "request",
+    createApp({
+      prisma,
+      redis,
+      queue,
+      emitter,
+      metrics,
+      env,
+      // Reset demo brings the seeded history back.
+      demo: { reseed: () => seedHistory(prisma) },
+    }),
+  );
 
   await callService.recoverStaleCalls();
 

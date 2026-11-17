@@ -157,6 +157,16 @@ describe("POST /api/demo/reset", () => {
     expect(await getCacheVersion(ctx.redis)).toBeGreaterThan(0);
   });
 
+  it("bumps the cache version after re-seeding, so no half-built picture is ever cached", async () => {
+    let versionDuringSeed = -1;
+    const reseed = async () => {
+      versionDuringSeed = await getCacheVersion(ctx.redis);
+    };
+    const app = createApp({ ...ctx, demo: { reseed } });
+    await request(app).post("/api/demo/reset");
+    expect(await getCacheVersion(ctx.redis)).toBeGreaterThan(versionDuringSeed);
+  });
+
   it("re-seeds history through the supplied hook and refreshes the dashboard", async () => {
     const reseed = vi.fn(async () => undefined);
     const schedule = vi.fn();

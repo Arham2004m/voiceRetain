@@ -77,8 +77,10 @@ export async function resetDemo(deps: DemoDeps): Promise<void> {
   await queue.obliterate({ force: true });
   await deleteKeys(redis, "search:*");
   await deleteKeys(redis, "metrics:*");
-  await bumpCacheVersion(redis);
   await deps.demo?.reseed?.();
+  // After re-seeding, so a request that lands mid-seed can never leave a half-built picture
+  // cached under the current version.
+  await bumpCacheVersion(redis);
   deps.metrics.schedule();
 }
 
