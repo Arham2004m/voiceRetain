@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import type { VoucherDTO } from "@voiceretain/shared";
 import { formatWhen } from "@/lib/format";
 import { effectiveVoucherStatus } from "@/lib/dashboard/labels";
@@ -7,8 +8,21 @@ import { VoucherStatusBadge } from "./Badges";
 const th = "px-3 py-2 text-left font-semibold";
 const td = "px-3 py-3 align-middle";
 
-export function VoucherTable({ vouchers }: { vouchers: VoucherDTO[] }) {
-  if (vouchers.length === 0) return <p className="text-ink-soft py-6">No discount codes yet.</p>;
+export function VoucherTable({
+  vouchers,
+  emptyHint,
+}: {
+  vouchers: VoucherDTO[];
+  emptyHint?: ReactNode;
+}) {
+  if (vouchers.length === 0) {
+    return (
+      <div className="py-6">
+        <p className="font-semibold">No discount codes yet.</p>
+        {emptyHint ? <p className="text-ink-soft mt-1 max-w-[34rem]">{emptyHint}</p> : null}
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-x-auto">

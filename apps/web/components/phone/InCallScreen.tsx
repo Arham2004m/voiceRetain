@@ -15,6 +15,8 @@ interface Props {
   answeredAt: number | null;
   muted: boolean;
   hangingUp: boolean;
+  /** False while the live connection to the server is down. */
+  connected?: boolean;
   recognition: {
     supported: boolean;
     permission: MicPermission;
@@ -39,7 +41,7 @@ function useElapsed(since: number | null) {
 }
 
 export function InCallScreen(props: Props) {
-  const { state, recognition, muted, hangingUp } = props;
+  const { state, recognition, muted, hangingUp, connected = true } = props;
   const elapsed = useElapsed(props.answeredAt);
 
   const micUsable = recognition.supported && recognition.permission !== "denied";
@@ -87,6 +89,12 @@ export function InCallScreen(props: Props) {
           {status}
         </p>
       </header>
+
+      {connected ? null : (
+        <p role="status" className="bg-marigold text-ink mx-4 mb-2 px-3 py-2 text-sm font-semibold">
+          Reconnecting… the agent may be quiet for a moment.
+        </p>
+      )}
 
       <TranscriptView lines={props.transcript} interim={recognition.interim} />
 

@@ -6,10 +6,11 @@ import { LiveCallPanel } from "@/components/dashboard/LiveCallPanel";
 import { MetricsTally, RecoveryHeadline } from "@/components/dashboard/MetricsTally";
 import { RevenueChart } from "@/components/dashboard/RevenueChart";
 import { SentimentBreakdown } from "@/components/dashboard/SentimentBreakdown";
+import { TableSkeleton } from "@/components/dashboard/TableSkeleton";
 import { useDashboardSocket } from "@/lib/dashboard/useDashboardSocket";
 
 export default function OverviewPage() {
-  const { metrics, recentCalls, liveCall, loading, error } = useDashboardSocket();
+  const { metrics, recentCalls, liveCall, error } = useDashboardSocket();
 
   if (!metrics) {
     return error ? (
@@ -18,7 +19,7 @@ export default function OverviewPage() {
         <p className="mt-2">{error}</p>
       </div>
     ) : (
-      <p aria-busy={loading}>Loading the dashboard…</p>
+      <TableSkeleton rows={6} label="Loading the dashboard" />
     );
   }
 
@@ -55,7 +56,11 @@ export default function OverviewPage() {
             All calls
           </Link>
         </div>
-        <CallsTable calls={recentCalls} caption="Ten most recent calls" />
+        <CallsTable
+          calls={recentCalls}
+          caption="Ten most recent calls"
+          emptyHint="Start a checkout on the store and leave, or ring the phone from the Demo page."
+        />
       </section>
     </div>
   );

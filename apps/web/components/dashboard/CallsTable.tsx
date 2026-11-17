@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { formatINR, type CallSummaryDTO } from "@voiceretain/shared";
 import { formatDuration, formatPhone, formatWhen } from "@/lib/format";
 import { CallStatusBadge, OutcomeBadge, SentimentBadge } from "./Badges";
@@ -9,11 +10,21 @@ const td = "px-3 py-3 align-middle";
 export function CallsTable({
   calls,
   caption = "Calls",
+  emptyHint,
 }: {
   calls: CallSummaryDTO[];
   caption?: string;
+  /** What to do next when there are no calls. */
+  emptyHint?: ReactNode;
 }) {
-  if (calls.length === 0) return <p className="text-ink-soft py-6">No calls yet.</p>;
+  if (calls.length === 0) {
+    return (
+      <div className="py-6">
+        <p className="font-semibold">No calls yet.</p>
+        {emptyHint ? <p className="text-ink-soft mt-1 max-w-[34rem]">{emptyHint}</p> : null}
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-x-auto">

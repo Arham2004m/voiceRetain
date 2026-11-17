@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { CallsTable } from "@/components/dashboard/CallsTable";
+import { TableSkeleton } from "@/components/dashboard/TableSkeleton";
+import { useToast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/Button";
 import { useCallsList } from "@/lib/dashboard/useCallsList";
 
@@ -36,6 +38,13 @@ function CallsPage() {
     sentiment,
     customerId,
   });
+
+  // A failed first load shows inline; a failed "show more" arrives as a toast over the table.
+  const toast = useToast();
+  useEffect(() => {
+    if (error && calls.length > 0) toast.push(error, "error");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [error]);
 
   const setFilter = (key: string, value: string) => {
     const next = new URLSearchParams(params.toString());
@@ -91,12 +100,24 @@ function CallsPage() {
         ) : null}
       </div>
 
-      {error ? (
+      {error && calls.length === 0 ? (
         <p role="alert" className="text-kumkum font-medium">
           {error}
         </p>
       ) : null}
-      {loading ? <p aria-busy>Loading calls…</p> : <CallsTable calls={calls} caption="Calls" />}
+      {loading ? (
+        <TableSkeleton label="Loading calls" />
+      ) : (
+        <CallsTable
+          calls={calls}
+          caption="Calls"
+          emptyHint={
+            customerId || outcome || sentiment
+              ? "Nothing matches these filters. Clear a filter to see more."
+              : "Start a checkout on the store and leave, or ring the phone from the Demo page."
+          }
+        />
+      )}
 
       {hasMore ? (
         <div>

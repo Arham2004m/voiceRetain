@@ -93,6 +93,7 @@ export default function PhonePage() {
               answeredAt={call.answeredAt}
               muted={call.muted}
               hangingUp={call.hangingUp}
+              connected={call.connected}
               recognition={call.recognition}
               onSend={call.sendText}
               onToggleMute={call.toggleMute}

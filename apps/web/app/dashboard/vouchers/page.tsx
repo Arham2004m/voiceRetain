@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { VoucherDTO } from "@voiceretain/shared";
+import { TableSkeleton } from "@/components/dashboard/TableSkeleton";
 import { VoucherTable } from "@/components/dashboard/VoucherTable";
+import { useToast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/Button";
 import { api } from "@/lib/api";
 import { useDashboardEvents } from "@/lib/dashboard/useDashboardRoom";
@@ -21,6 +23,7 @@ export default function VouchersPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string>();
+  const toast = useToast();
 
   const load = useCallback(async () => {
     try {
@@ -50,6 +53,8 @@ export default function VouchersPage() {
       const page = await api.listVouchers({ limit: 20, cursor, status: status || undefined });
       setVouchers((list) => [...list, ...page.items]);
       setCursor(page.nextCursor);
+    } catch (err) {
+      toast.push(err instanceof Error ? err.message : "Could not load more codes.", "error");
     } finally {
       setLoadingMore(false);
     }
@@ -81,7 +86,18 @@ export default function VouchersPage() {
           {error}
         </p>
       ) : null}
-      {loading ? <p aria-busy>Loading codes…</p> : <VoucherTable vouchers={vouchers} />}
+      {loading ? (
+        <TableSkeleton label="Loading codes" />
+      ) : (
+        <VoucherTable
+          vouchers={vouchers}
+          emptyHint={
+            status
+              ? "No codes have this status."
+              : "Codes appear when the agent offers a discount on a call."
+          }
+        />
+      )}
 
       {cursor ? (
         <div>

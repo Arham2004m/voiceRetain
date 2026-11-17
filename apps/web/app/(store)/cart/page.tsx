@@ -31,6 +31,7 @@ export default function CartPage() {
 
   return (
     <section className="grid gap-10 py-10 lg:grid-cols-12 lg:py-14">
+      <title>Your cart · ShopNest</title>
       <div className="lg:col-span-8">
         <h1 className="display text-6xl sm:text-8xl">Your cart</h1>
         <ul className="border-ink mt-8 border-t-2">
