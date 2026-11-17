@@ -13,6 +13,7 @@ const { createAbandonmentQueue } = await import("./queue/abandonment.queue");
 const { startAbandonmentWorker } = await import("./queue/abandonment.worker");
 const { createSocketServer, attachSocketHandlers } = await import("./realtime/socket");
 const { createCallService } = await import("./calls/call.service");
+const { createMetricsBroadcaster } = await import("./realtime/metrics-broadcaster");
 const { CallTimers } = await import("./calls/call.timers");
 const { createLlm } = await import("./agent/create-llm");
 const { createAgentService } = await import("./agent/agent.service");
@@ -26,8 +27,7 @@ async function main() {
 
   const httpServer = createServer();
   const { io, emitter } = createSocketServer(httpServer, { env });
-  // Replaced by the debounced broadcaster in Stage 9.
-  const metrics = { schedule: () => undefined };
+  const metrics = createMetricsBroadcaster({ db: prisma, redis, emitter });
   const llm = createLlm(env);
   logger.info(
     { llm: env.MOCK_LLM ? "mock" : env.GEMINI_MODEL },
