@@ -22,6 +22,8 @@ interface Props {
     permission: MicPermission;
     listening: boolean;
     interim: string;
+    /** Last recognition error code from the browser, e.g. "network" or "audio-capture". */
+    error?: string | null;
   };
   onSend: (text: string) => void;
   onToggleMute: () => void;
@@ -63,7 +65,13 @@ export function InCallScreen(props: Props) {
     ? "Voice works best in Chrome or Edge — type your replies below."
     : recognition.permission === "denied"
       ? "Microphone access is blocked. Type your replies below, or allow the microphone in your browser settings."
-      : null;
+      : recognition.error === "network"
+        ? "The browser could not reach its speech service (needs internet, and does not work in some browsers). Type your replies below."
+        : recognition.error === "audio-capture"
+          ? "No microphone was found. Check your input device, or type your replies below."
+          : recognition.error
+            ? `Speech recognition stopped (${recognition.error}). Type your replies below.`
+            : null;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col pt-7">

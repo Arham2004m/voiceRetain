@@ -58,6 +58,16 @@ describe("InCallScreen connection light", () => {
     expect(screen.queryByText(/reconnecting/i)).not.toBeInTheDocument();
   });
 
+  it("explains a speech-recognition failure instead of staying silent", () => {
+    render(
+      <InCallScreen
+        {...props}
+        recognition={{ ...props.recognition, error: "network" }}
+      />,
+    );
+    expect(screen.getByText(/speech service/i)).toBeInTheDocument();
+  });
+
   it("warns when the connection drops, so a silent agent is explained", () => {
     render(<InCallScreen {...props} connected={false} />);
     expect(screen.getByRole("status")).toHaveTextContent(/reconnecting/i);

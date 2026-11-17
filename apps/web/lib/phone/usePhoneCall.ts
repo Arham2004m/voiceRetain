@@ -335,6 +335,7 @@ export function usePhoneCall(phone: string | null) {
       permission: rec.permission,
       listening: rec.listening,
       interim: rec.interim,
+      error: rec.error,
     },
     answer,
     decline,
