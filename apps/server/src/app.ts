@@ -11,6 +11,8 @@ import { ordersRoutes } from "./routes/orders.routes";
 import { dashboardRoutes } from "./routes/dashboard.routes";
 import { callsRoutes } from "./routes/calls.routes";
 import { searchRoutes } from "./routes/search.routes";
+import { demoRoutes } from "./routes/demo.routes";
+import type { DemoHooks } from "./services/demo.service";
 import { healthRoutes } from "./routes/health.routes";
 import { productsRoutes } from "./routes/products.routes";
 import { cartsRoutes } from "./routes/carts.routes";
@@ -25,6 +27,8 @@ export interface AppDeps {
   /** Debounced dashboard metrics broadcaster (a no-op until Stage 9). */
   metrics: { schedule(): void };
   env: Env;
+  /** Hooks for the demo routes (re-seeding after a reset, catalogue refresh). */
+  demo?: DemoHooks;
 }
 
 export function createApp(deps: AppDeps): express.Express {
@@ -41,6 +45,8 @@ export function createApp(deps: AppDeps): express.Express {
   app.use("/api", dashboardRoutes(deps));
   app.use("/api", callsRoutes(deps));
   app.use("/api", searchRoutes(deps));
+  // These routes can wipe data, so they exist only in demo mode (PRD §10.4).
+  if (deps.env.DEMO_MODE) app.use("/api", demoRoutes(deps));
   app.use(notFoundHandler);
   app.use(errorHandler);
   return app;
