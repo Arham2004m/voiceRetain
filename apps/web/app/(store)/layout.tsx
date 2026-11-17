@@ -1,5 +1,6 @@
 import { CartProvider } from "@/components/store/CartProvider";
 import { Header } from "@/components/store/Header";
+import { StoreCallOverlay } from "@/components/phone/StoreCallOverlay";
 import { ToastProvider } from "@/components/ui/Toast";
 
 export default function StoreLayout({ children }: { children: React.ReactNode }) {
@@ -21,6 +22,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
             ShopNest is a demo store. Orders are not charged and nothing is shipped.
           </p>
         </footer>
+        <StoreCallOverlay />
       </CartProvider>
     </ToastProvider>
   );

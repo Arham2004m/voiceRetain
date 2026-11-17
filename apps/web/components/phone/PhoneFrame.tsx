@@ -28,7 +28,7 @@ export function PhoneFrame({
       }
       className="bg-ink mx-auto w-full max-w-[24rem] rounded-[2.9rem] p-3"
     >
-      <div className="bg-ink text-paper ring-paper/15 relative flex min-h-[40rem] flex-col overflow-hidden rounded-[2.2rem] ring-1">
+      <div className="bg-ink text-paper ring-paper/15 relative flex min-h-[min(40rem,calc(100dvh-2.5rem))] flex-col overflow-hidden rounded-[2.2rem] ring-1">
         <span
           aria-hidden
           className="bg-paper/25 absolute top-2.5 left-1/2 z-10 h-1.5 w-20 -translate-x-1/2 rounded-full"

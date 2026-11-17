@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import type { VoucherCard } from "@voiceretain/shared";
 import type { MicPermission } from "@/lib/speech/useSpeechRecognition";
 import type { PhoneState, TranscriptLine } from "@/lib/phone/usePhoneCall";
@@ -40,6 +40,30 @@ function useElapsed(since: number | null) {
     return () => clearInterval(timer);
   }, []);
   return since === null ? 0 : Math.max(0, Math.floor((now - since) / 1000));
+}
+
+/** Decorative bars: marigold while the agent speaks, green while the shopper's mic is open. */
+function VoiceBars({ mode }: { mode: "agent" | "you" | "idle" }) {
+  const heights = [0.5, 0.9, 0.65, 1, 0.55];
+  return (
+    <span aria-hidden data-voice-bars={mode} className="flex h-6 items-center gap-[3px]">
+      {heights.map((h, i) => (
+        <span
+          key={i}
+          style={
+            {
+              height: `${h * 100}%`,
+              "--bar-time": `${0.7 + i * 0.09}s`,
+              "--bar-delay": `${i * 0.08}s`,
+            } as CSSProperties
+          }
+          className={`voice-bar w-[3px] origin-center rounded-full ${
+            mode === "agent" ? "bg-marigold" : mode === "you" ? "bg-leaf" : "bg-paper/40"
+          }`}
+        />
+      ))}
+    </span>
+  );
 }
 
 export function InCallScreen(props: Props) {
@@ -84,15 +108,16 @@ export function InCallScreen(props: Props) {
           className="bg-paper/10 flex items-center gap-2 px-3 py-1.5 text-sm font-semibold"
           aria-live="polite"
         >
-          <span
-            aria-hidden
-            className={`size-2 rounded-full ${
-              state === "speaking"
-                ? "bg-marigold"
-                : state === "thinking"
-                  ? "bg-paper/60"
-                  : "bg-leaf"
-            }`}
+          <VoiceBars
+            mode={
+              hangingUp || state === "connecting" || state === "thinking"
+                ? "idle"
+                : state === "speaking"
+                  ? "agent"
+                  : micUsable && !muted && recognition.listening
+                    ? "you"
+                    : "idle"
+            }
           />
           {status}
         </p>

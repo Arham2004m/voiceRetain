@@ -75,7 +75,7 @@ npm run db:seed
 npm run dev
 ```
 
-Open the store at <http://localhost:3000>, the phone at <http://localhost:3000/phone> and the dashboard at <http://localhost:3000/dashboard>. The API is on <http://localhost:4000>.
+Open the store at <http://localhost:3000> (calls ring here, in a popup) and the dashboard at <http://localhost:3000/dashboard>. A standalone phone page is also at <http://localhost:3000/phone>. The API is on <http://localhost:4000>.
 
 For the AI, either set `MOCK_LLM=true` (no key needed) or set `GEMINI_API_KEY` and `MOCK_LLM=false` in `.env`. Never commit `.env`; it is git-ignored.
 

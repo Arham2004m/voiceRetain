@@ -89,3 +89,22 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Voice bars on the call screen: lively while someone is talking, flat while thinking. */
+@keyframes voice-bar {
+  0%,
+  100% {
+    transform: scaleY(0.25);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.voice-bar {
+  transform: scaleY(0.25);
+}
+[data-voice-bars="agent"] .voice-bar,
+[data-voice-bars="you"] .voice-bar {
+  animation: voice-bar var(--bar-time) var(--bar-delay) ease-in-out infinite;
+}

@@ -58,6 +58,18 @@ describe("InCallScreen connection light", () => {
     expect(screen.queryByText(/reconnecting/i)).not.toBeInTheDocument();
   });
 
+  it("shows voice bars that follow who is talking", () => {
+    const { rerender, container } = render(<InCallScreen {...props} state="speaking" />);
+    expect(container.querySelector("[data-voice-bars]")).toHaveAttribute(
+      "data-voice-bars",
+      "agent",
+    );
+    rerender(<InCallScreen {...props} state="listening" />);
+    expect(container.querySelector("[data-voice-bars]")).toHaveAttribute("data-voice-bars", "you");
+    rerender(<InCallScreen {...props} state="thinking" />);
+    expect(container.querySelector("[data-voice-bars]")).toHaveAttribute("data-voice-bars", "idle");
+  });
+
   it("explains a speech-recognition failure instead of staying silent", () => {
     render(
       <InCallScreen

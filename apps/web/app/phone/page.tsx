@@ -9,25 +9,7 @@ import { PhoneFrame } from "@/components/phone/PhoneFrame";
 import { RegisterPhone } from "@/components/phone/RegisterPhone";
 import { RingingScreen } from "@/components/phone/RingingScreen";
 import { usePhoneCall } from "@/lib/phone/usePhoneCall";
-
-export const PHONE_KEY = "vr.phone";
-
-function readPhone(): string | null {
-  try {
-    return window.localStorage.getItem(PHONE_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function writePhone(phone: string | null) {
-  try {
-    if (phone) window.localStorage.setItem(PHONE_KEY, phone);
-    else window.localStorage.removeItem(PHONE_KEY);
-  } catch {
-    /* the phone still works until the page is closed */
-  }
-}
+import { readPhone, writePhone } from "@/lib/phone/registry";
 
 export default function PhonePage() {
   // undefined while the saved number has not been read yet.

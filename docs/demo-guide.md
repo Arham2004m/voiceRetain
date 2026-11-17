@@ -9,17 +9,17 @@
   - Safe mode: `MOCK_LLM=true`. Predictable, needs no internet for the AI.
 - [ ] `npm run dev`, and wait until both the server and the web app say ready.
 - [ ] On the dashboard **Demo** page: **Reset demo** (keeps the 20 seeded calls), then set the abandonment delay to something short such as 10 seconds for the room. Reset it afterwards if you want the 30 s default.
-- [ ] Open three windows: Store `http://localhost:3000`, Phone `http://localhost:3000/phone`, Dashboard `http://localhost:3000/dashboard`.
-- [ ] On the Phone page, allow the microphone when asked, and click "Tap to enable sound" if it shows.
+- [ ] Open two windows: Store `http://localhost:3000` (the call rings here) and Dashboard `http://localhost:3000/dashboard`.
+- [ ] Click Answer once the call rings and allow the microphone when asked.
 - [ ] Have a short screen recording of a good run ready as a backup.
 
 ## The script
 
 Pick any product costing ₹500 or more (smaller carts get no discount by design). Example numbers below assume a ₹1,499 cart.
 
-1. **Phone:** register `9876543210`.
+1. **Phone:** nothing to set up. The call rings inside the Store window, on the number you type at checkout. (The separate `/phone` page still works if you want a second screen.)
 2. **Store:** add the product to the cart, go to checkout, enter name "Rohan", phone `9876543210`, tick the call consent box, **Continue to payment**, then **Leave store**.
-3. Wait for the delay. The **Phone** rings with "ShopNest, Rohan's order". The dashboard shows the call as *Ringing*. Point out the live update.
+3. Wait for the delay. A phone pops up over the **Store** page and rings (the tab title flashes "ShopNest is calling") with "ShopNest, Rohan's order". The dashboard shows the call as *Ringing*. Point out the live update.
 4. **Answer.** The agent greets.
 5. Say: *"The shipping was too expensive."* The agent offers 10% with a code like `VR-8KQ2-X7MD`, shown on screen with a **Complete my order** link.
 6. Say: *"Can you make it 50 percent?"* The agent says 15% is the most it can do, and a 15% code replaces the 10% one. Explain: the cap is in the server code, not the prompt.

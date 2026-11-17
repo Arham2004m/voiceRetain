@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ApiClientError, api } from "@/lib/api";
+import { writePhone } from "@/lib/phone/registry";
 import { ButtonLink } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { useToast } from "@/components/ui/Toast";
@@ -85,6 +86,7 @@ function CheckoutFlow() {
     setSubmitting(true);
     try {
       replace(await api.checkout(cart.id, values));
+      writePhone(values.phone); // the number that gets the call: no separate phone to register
       setStep("payment");
     } catch (err) {
       toast.push(err instanceof Error ? err.message : "Could not save your details.", "error");
