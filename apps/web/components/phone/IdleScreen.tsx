@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import type { VoucherCard } from "@voiceretain/shared";
+import { formatPhone } from "@/lib/format";
 import { VoucherCardView } from "./VoucherCardView";
-
-export const formatPhone = (p: string) => (p.length === 10 ? `${p.slice(0, 5)} ${p.slice(5)}` : p);
 
 const time = new Intl.DateTimeFormat("en-IN", { hour: "numeric", minute: "2-digit", hour12: true });
 const day = new Intl.DateTimeFormat("en-IN", { weekday: "long", day: "numeric", month: "long" });

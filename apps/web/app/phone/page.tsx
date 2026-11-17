@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { EndedScreen } from "@/components/phone/EndedScreen";
-import { IdleScreen, formatPhone } from "@/components/phone/IdleScreen";
+import { IdleScreen } from "@/components/phone/IdleScreen";
+import { formatPhone } from "@/lib/format";
 import { InCallScreen } from "@/components/phone/InCallScreen";
 import { PhoneFrame } from "@/components/phone/PhoneFrame";
 import { RegisterPhone } from "@/components/phone/RegisterPhone";

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ApiClientError, api } from "../api";
+import { ApiClientError, api, queryString } from "../api";
 
 const fetchMock = vi.fn();
 
@@ -77,5 +77,47 @@ describe("api client", () => {
     fetchMock.mockResolvedValue(new Response("Bad gateway", { status: 502 }));
     const err = await api.getProducts().catch((e) => e);
     expect(err).toMatchObject({ status: 502, code: "HTTP_502" });
+  });
+});
+
+describe("queryString", () => {
+  it("builds a query and leaves out empty values", () => {
+    expect(queryString({ a: 1, b: "x y", c: undefined, d: "" })).toBe("?a=1&b=x%20y");
+    expect(queryString({})).toBe("");
+  });
+});
+
+describe("dashboard and demo calls", () => {
+  it("builds the dashboard URLs with filters", async () => {
+    fetchMock.mockImplementation(async () => json(200, {}));
+    await api.getMetrics();
+    await api.listCalls({ limit: 10, outcome: "RECOVERED", cursor: "c1" });
+    await api.getCall("call 1");
+    await api.listVouchers({ status: "ACTIVE" });
+    await api.search("rohan mehta");
+    expect(fetchMock.mock.calls.map((c) => c[0])).toEqual([
+      "http://api.test/api/dashboard/metrics",
+      "http://api.test/api/calls?limit=10&outcome=RECOVERED&cursor=c1",
+      "http://api.test/api/calls/call 1",
+      "http://api.test/api/vouchers?status=ACTIVE",
+      "http://api.test/api/search?q=rohan%20mehta",
+    ]);
+  });
+
+  it("calls the demo controls with the right methods", async () => {
+    fetchMock.mockImplementation(async () => json(200, {}));
+    await api.getDemoConfig();
+    await api.setDemoDelay(12000);
+    await api.triggerLatest();
+    await api.resetDemo();
+    await api.syncCatalogue();
+    expect(fetchMock.mock.calls.map((c) => [c[0], c[1].method])).toEqual([
+      ["http://api.test/api/demo/config", "GET"],
+      ["http://api.test/api/demo/config", "PUT"],
+      ["http://api.test/api/demo/trigger-latest", "POST"],
+      ["http://api.test/api/demo/reset", "POST"],
+      ["http://api.test/api/demo/sync-catalogue", "POST"],
+    ]);
+    expect(JSON.parse(fetchMock.mock.calls[1]![1].body)).toEqual({ abandonDelayMs: 12000 });
   });
 });
